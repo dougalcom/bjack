@@ -1,6 +1,6 @@
 import random, time, deck, beepy
 
-version = '1.7'
+version = '1.71'
 game = True
 standing, dealToPlayer, double = [False]*3
 playerwins, dealerwins, playersum, dealersum, moves = [0] * 5
@@ -188,8 +188,9 @@ while True:
             money = 1000
             gameDeck = deck.fullDeck.copy()
             resetgame()
-        else: resetgame()
-    elif game is True and standing is False and moves < 2 and money >= (bet*2):
+        elif choice =='' : resetgame()
+        else: print('what?')
+    elif game is True and standing is False and moves == 1 and money >= (bet*2):
         choice = input("[s]tand, [h]it, or [d]ouble? ")
         if choice == 'h': dealToPlayer = True
         elif choice == 'd':
