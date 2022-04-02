@@ -1,6 +1,6 @@
 import random, time, deck, beepy
 
-version = '1.71'
+version = '1.72'
 game = True
 standing, dealToPlayer, double = [False]*3
 playerwins, dealerwins, playersum, dealersum, moves = [0] * 5
