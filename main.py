@@ -1,6 +1,6 @@
 import random, time, deck, beepy
 
-version = '1.72'
+version = '1.73'
 game = True
 standing, dealToPlayer, double = [False]*3
 playerwins, dealerwins, playersum, dealersum, moves = [0] * 5
@@ -12,8 +12,8 @@ savegamefile = 'savegame.txt'
 def savegame():
     global bet, money
     f = open(savegamefile, "w+")
-    f.writelines(str(bet)+'\n')
-    f.writelines(str(money))
+    f.writelines(str(round(bet))+'\n')
+    f.writelines(str(round(money)))
     f.close()
 
 def loadgame():
@@ -160,12 +160,12 @@ while True:
         dealToPlayer = False
     if standing is True and len(turncard) > 0: flipturncard()
     elif game is True and standing is True and dealersum < 17: dealcard('dealer')
-    if playersum == 21: standing = True
     sumcards()
     printhands()
+    if playersum == 21: standing = True
     gameovercheck()
     if game is False:
-        print('you have $' + str(round(money,0)))
+        print('you have $' + str(round(money)))
         if money < 1:
             print('\n* you are bankrupt. time to quit. *\n')
             sound('dealerwins')
