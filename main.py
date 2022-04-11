@@ -1,6 +1,6 @@
-import random, time, deck, beepy
+import random, time, deck
 
-version = '1.73'
+version = '1.75'
 game = True
 standing, dealToPlayer, double = [False]*3
 playerwins, dealerwins, playersum, dealersum, moves = [0] * 5
@@ -85,41 +85,30 @@ def gameovercheck():
     if game is True and playersum > 21:
         game = False
         print('\ngame over: player busts, dealer wins\n')
-        sound('dealerwins')
         dealerwins += 1
         money -= bet
         if double: money -= bet
     if game is True and dealersum > 21:
         game = False
         print('\ngame over: dealer busts, player wins\n')
-        sound('playerwins')
         playerwins += 1
         money += bet
         if double: money += bet
     if game is True and standing is True and dealersum == playersum and dealersum > 16:
         game = False
         print('\ngame over: draw\n')
-        sound('tie')
     if game is True and standing is True and playersum > dealersum > 16:
         game = False
         print('\ngame over: player wins\n')
-        sound('playerwins')
         playerwins += 1
         money += bet
         if double: money += bet
     if game is True and standing is True and dealersum > playersum and dealersum > 16:
         game = False
         print('\ngame over: dealer wins\n')
-        sound('dealerwins')
         dealerwins += 1
         money -= bet
         if double: money -= bet
-
-def sound(soundType):
-    if soundType == 'playerwins': beepy.beep(sound='coin')
-    elif soundType == 'dealerwins': beepy.beep(sound='error')
-    elif soundType == 'tie': beepy.beep(sound='ping')
-    elif soundType == 'blackjack': beepy.beep(sound='ready')
 
 loadgame()
 
@@ -140,18 +129,15 @@ while True:
             game = False
             flipturncard()
             print('\ngame over: push\n')
-            sound('tie')
         if len(turncard) > 0 and turncard[0][0] + dealersum == 21:
             game = False
             flipturncard()
             print('\ngame over: dealer wins with a Blackjack\n')
-            sound('dealerwins')
             dealerwins += 1
             money -= bet
         if playersum == 21:
             game = False
             print('\ngame over: player wins with a Blackjack\n')
-            sound('blackjack')
             playerwins += 1
             money += bet*1.5
     else: print('\n--- move ' + str(moves) + ' ---')
@@ -168,7 +154,6 @@ while True:
         print('you have $' + str(round(money)))
         if money < 1:
             print('\n* you are bankrupt. time to quit. *\n')
-            sound('dealerwins')
             exit()
         choice = input('[enter] next round at $' + str(bet) + ', [c]hange bet, [r]eset, or [q]uit? ')
         if choice == 'q':
