@@ -1,9 +1,15 @@
-import random, time, deck, beepy
+import random, time, deck
 
-version = '1.72'
+# customizable settings
+defaultbet = 10         # how much bet to start with
+defaultmoney = 1000     # how much money to start with
+delaytime = 0.5         # seconds to pause between card deals
+scrollamount = 20       # how many lines to 'clear' the screen
+
+version = '1.76'
 game = True
-standing, dealToPlayer, double = [False]*3
-playerwins, dealerwins, playersum, dealersum, moves = [0] * 5
+standing, dealToPlayer, double = [False] * 3
+playerwins, dealerwins, playersum, dealersum, moves, money, bet = [0] * 7
 cycles = 1
 dealerhand, playerhand, turncard = [], [], []
 gameDeck = deck.fullDeck.copy()
@@ -12,8 +18,8 @@ savegamefile = 'savegame.txt'
 def savegame():
     global bet, money
     f = open(savegamefile, "w+")
-    f.writelines(str(bet)+'\n')
-    f.writelines(str(money))
+    f.writelines(str(round(bet))+'\n')
+    f.writelines(str(round(money)))
     f.close()
 
 def loadgame():
@@ -24,14 +30,18 @@ def loadgame():
     bet = int(lines[0])
     money = int(lines[1])
 
-def resetgame():
-    global game, standing, moves, dealerhand, dealersum, playerhand, playersum, turncard, dealToPlayer, double, cycles
-    for i in range(20): print()
+def resetgame(howdeep=''):
+    global bet, money, gameDeck, game, standing, moves, dealerhand, dealersum, playerhand, playersum, turncard, dealToPlayer, double, cycles
+    for i in range(scrollamount): print()
     game = True
     standing, dealToPlayer, double = [False]*3
     playersum, dealersum, moves = [0] * 3
     dealerhand, playerhand, turncard = [], [], []
     cycles += 1
+    if howdeep == 'deeply':
+        bet = defaultbet
+        money = defaultmoney
+        gameDeck = deck.fullDeck.copy()
     savegame()
 
 def cardname(card): return str(card[1]) + str(card[2])
@@ -85,46 +95,35 @@ def gameovercheck():
     if game is True and playersum > 21:
         game = False
         print('\ngame over: player busts, dealer wins\n')
-        sound('dealerwins')
         dealerwins += 1
         money -= bet
         if double: money -= bet
     if game is True and dealersum > 21:
         game = False
         print('\ngame over: dealer busts, player wins\n')
-        sound('playerwins')
         playerwins += 1
         money += bet
         if double: money += bet
     if game is True and standing is True and dealersum == playersum and dealersum > 16:
         game = False
         print('\ngame over: draw\n')
-        sound('tie')
     if game is True and standing is True and playersum > dealersum > 16:
         game = False
         print('\ngame over: player wins\n')
-        sound('playerwins')
         playerwins += 1
         money += bet
         if double: money += bet
     if game is True and standing is True and dealersum > playersum and dealersum > 16:
         game = False
         print('\ngame over: dealer wins\n')
-        sound('dealerwins')
         dealerwins += 1
         money -= bet
         if double: money -= bet
 
-def sound(soundType):
-    if soundType == 'playerwins': beepy.beep(sound='coin')
-    elif soundType == 'dealerwins': beepy.beep(sound='error')
-    elif soundType == 'tie': beepy.beep(sound='ping')
-    elif soundType == 'blackjack': beepy.beep(sound='ready')
-
 loadgame()
 
 while True:
-    if moves > 0: time.sleep(0.6)
+    if moves > 0: time.sleep(delaytime)
     moves += 1
     if moves == 1:
         if dealerwins > 0 or playerwins > 0: winRate = round(playerwins / (dealerwins + playerwins) * 100)
@@ -140,18 +139,15 @@ while True:
             game = False
             flipturncard()
             print('\ngame over: push\n')
-            sound('tie')
         if len(turncard) > 0 and turncard[0][0] + dealersum == 21:
             game = False
             flipturncard()
             print('\ngame over: dealer wins with a Blackjack\n')
-            sound('dealerwins')
             dealerwins += 1
             money -= bet
         if playersum == 21:
             game = False
             print('\ngame over: player wins with a Blackjack\n')
-            sound('blackjack')
             playerwins += 1
             money += bet*1.5
     else: print('\n--- move ' + str(moves) + ' ---')
@@ -160,15 +156,15 @@ while True:
         dealToPlayer = False
     if standing is True and len(turncard) > 0: flipturncard()
     elif game is True and standing is True and dealersum < 17: dealcard('dealer')
-    if playersum == 21: standing = True
     sumcards()
     printhands()
+    if playersum == 21: standing = True
     gameovercheck()
     if game is False:
-        print('you have $' + str(round(money,0)))
+        print('you have $' + str(round(money)))
         if money < 1:
-            print('\n* you are bankrupt. time to quit. *\n')
-            sound('dealerwins')
+            print('\n* you are bankrupt. time to quit! *\n')
+            resetgame('deeply')
             exit()
         choice = input('[enter] next round at $' + str(bet) + ', [c]hange bet, [r]eset, or [q]uit? ')
         if choice == 'q':
@@ -184,10 +180,11 @@ while True:
                 time.sleep(2)
             resetgame()
         elif choice == 'r':
-            bet = 10
-            money = 1000
-            gameDeck = deck.fullDeck.copy()
-            resetgame()
+            resetconfirm = input('are you sure you want to start over with $' + str(defaultmoney) + '? [y/n]')
+            if resetconfirm == 'y' or resetconfirm == 'Y':
+                resetgame('deeply')
+            else:
+                resetgame()
         elif choice =='' : resetgame()
         else: print('what?')
     elif game is True and standing is False and moves == 1 and money >= (bet*2):
