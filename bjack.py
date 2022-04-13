@@ -6,7 +6,7 @@ defaultmoney = 1000     # how much money to start with
 delaytime = 0.5         # seconds to pause between card deals
 scrollamount = 20       # how many lines to 'clear' the screen
 
-version = '1.76'
+version = '1.77'
 game = True
 standing, dealToPlayer, double = [False] * 3
 playerwins, dealerwins, playersum, dealersum, moves, money, bet = [0] * 7
@@ -100,7 +100,7 @@ def gameovercheck():
         if double: money -= bet
     if game is True and dealersum > 21:
         game = False
-        print('\ngame over: dealer busts, player wins\n')
+        print('\ngame over: dealer busts, player wins $' + str(bet) + '\n')
         playerwins += 1
         money += bet
         if double: money += bet
@@ -109,7 +109,7 @@ def gameovercheck():
         print('\ngame over: draw\n')
     if game is True and standing is True and playersum > dealersum > 16:
         game = False
-        print('\ngame over: player wins\n')
+        print('\ngame over: player wins $' + str(bet) + '\n')
         playerwins += 1
         money += bet
         if double: money += bet
@@ -147,7 +147,7 @@ while True:
             money -= bet
         if playersum == 21:
             game = False
-            print('\ngame over: player wins with a Blackjack\n')
+            print('\ngame over: player wins $' + str(bet*1.5) + ' with a Blackjack\n')
             playerwins += 1
             money += bet*1.5
     else: print('\n--- move ' + str(moves) + ' ---')
