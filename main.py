@@ -1,9 +1,15 @@
 import random, time, deck
 
-version = '1.75'
+# customizable settings
+defaultbet = 10         # how much bet to start with
+defaultmoney = 1000     # how much money to start with
+delaytime = 0.5         # seconds to pause between card deals
+scrollamount = 20       # how many lines to 'clear' the screen
+
+version = '1.76'
 game = True
-standing, dealToPlayer, double = [False]*3
-playerwins, dealerwins, playersum, dealersum, moves = [0] * 5
+standing, dealToPlayer, double = [False] * 3
+playerwins, dealerwins, playersum, dealersum, moves, money, bet = [0] * 7
 cycles = 1
 dealerhand, playerhand, turncard = [], [], []
 gameDeck = deck.fullDeck.copy()
@@ -24,14 +30,18 @@ def loadgame():
     bet = int(lines[0])
     money = int(lines[1])
 
-def resetgame():
-    global game, standing, moves, dealerhand, dealersum, playerhand, playersum, turncard, dealToPlayer, double, cycles
-    for i in range(20): print()
+def resetgame(howdeep=''):
+    global bet, money, gameDeck, game, standing, moves, dealerhand, dealersum, playerhand, playersum, turncard, dealToPlayer, double, cycles
+    for i in range(scrollamount): print()
     game = True
     standing, dealToPlayer, double = [False]*3
     playersum, dealersum, moves = [0] * 3
     dealerhand, playerhand, turncard = [], [], []
     cycles += 1
+    if howdeep == 'deeply':
+        bet = defaultbet
+        money = defaultmoney
+        gameDeck = deck.fullDeck.copy()
     savegame()
 
 def cardname(card): return str(card[1]) + str(card[2])
@@ -113,7 +123,7 @@ def gameovercheck():
 loadgame()
 
 while True:
-    if moves > 0: time.sleep(0.6)
+    if moves > 0: time.sleep(delaytime)
     moves += 1
     if moves == 1:
         if dealerwins > 0 or playerwins > 0: winRate = round(playerwins / (dealerwins + playerwins) * 100)
@@ -153,7 +163,8 @@ while True:
     if game is False:
         print('you have $' + str(round(money)))
         if money < 1:
-            print('\n* you are bankrupt. time to quit. *\n')
+            print('\n* you are bankrupt. time to quit! *\n')
+            resetgame('deeply')
             exit()
         choice = input('[enter] next round at $' + str(bet) + ', [c]hange bet, [r]eset, or [q]uit? ')
         if choice == 'q':
@@ -169,10 +180,11 @@ while True:
                 time.sleep(2)
             resetgame()
         elif choice == 'r':
-            bet = 10
-            money = 1000
-            gameDeck = deck.fullDeck.copy()
-            resetgame()
+            resetconfirm = input('are you sure you want to start over with $' + str(defaultmoney) + '? [y/n]')
+            if resetconfirm == 'y' or resetconfirm == 'Y':
+                resetgame('deeply')
+            else:
+                resetgame()
         elif choice =='' : resetgame()
         else: print('what?')
     elif game is True and standing is False and moves == 1 and money >= (bet*2):
